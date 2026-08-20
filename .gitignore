@@ -1,0 +1,14 @@
+# Local and generated files that must not be published
+.DS_Store
+Thumbs.db
+Desktop.ini
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+.codex*/
+.openai/
+*.log
+*.tmp
