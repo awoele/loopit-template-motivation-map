@@ -1,26 +1,422 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>模板策略方法样例｜公开版</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Loopit 模板动机策略样例</title>
   <style>
-    :root{color-scheme:dark;--bg:#101315;--panel:#191e21;--text:#f4f5f2;--muted:#9ba5a4;--line:#30383a;--accent:#ff6847}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 84% 8%,#39251f 0,transparent 30rem),var(--bg);color:var(--text);font:16px/1.65 Inter,"Microsoft YaHei",sans-serif}.wrap{width:min(100% - 40px,980px);margin:auto;padding:76px 0}.tag{color:var(--accent);font:700 12px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}h1{max-width:760px;margin:16px 0;font-size:clamp(42px,8vw,76px);line-height:1.04;letter-spacing:-.055em}.lead{max-width:700px;color:var(--muted);font-size:20px}.notice{margin:36px 0;padding:16px 18px;border:1px solid #70463d;background:#251c19;color:#ded4cf}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}.card{min-height:220px;padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:14px}.num{color:var(--accent);font:700 12px/1 ui-monospace,monospace}.card h2{margin:28px 0 10px;font-size:22px}.card p{margin:0;color:var(--muted)}footer{margin-top:70px;color:#71807e;font-size:13px;border-top:1px solid var(--line);padding-top:16px}@media(max-width:700px){.wrap{width:min(100% - 32px,980px);padding:48px 0}.grid{grid-template-columns:1fr}.lead{font-size:18px}}
+    :root {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --line: #e6e9ef;
+      --text: #1f2329;
+      --muted: #646a73;
+      --blue: #3370ff;
+      --blue-soft: #e8f0ff;
+      --shadow: 0 8px 28px rgba(31,35,41,.06);
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .page { max-width: 1600px; margin: 0 auto; padding: 24px; }
+    .topbar {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+      margin-bottom: 18px;
+    }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+    h1 { margin: 4px 0 6px; font-size: 28px; line-height: 1.25; letter-spacing: -.02em; }
+    .subtitle { color: var(--muted); max-width: 850px; }
+    .source-pill {
+      flex: 0 0 auto; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(255,255,255,.8); color: var(--muted); font-size: 12px;
+    }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .kpi-label { color: var(--muted); font-size: 12px; }
+    .kpi-value { margin-top: 3px; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .controls {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+    }
+    .search-wrap { position: relative; min-width: 260px; flex: 1 1 280px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 10px; color: #8f959e; }
+    .search {
+      width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid #d9dce1; border-radius: 8px;
+      outline: none; background: #fff; transition: .15s;
+    }
+    .search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(51,112,255,.12); }
+    .filter-group { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      height: 34px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; transition: .15s;
+    }
+    .chip:hover { border-color: #b8c8ef; }
+    .chip.active { background: var(--blue-soft); border-color: #b9ccff; color: #245bdb; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, #8f959e); }
+    .chip-count { color: var(--muted); font-size: 12px; }
+    .reset { border: 0; background: transparent; color: var(--blue); cursor: pointer; padding: 8px; }
+    .workspace { display: grid; grid-template-columns: minmax(700px, 1fr) 330px; gap: 14px; align-items: stretch; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .chart-panel { min-width: 0; overflow: hidden; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 17px 18px 8px; }
+    .panel-title { font-size: 16px; font-weight: 700; }
+    .panel-note { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .chart-actions { display: flex; align-items: center; gap: 14px; }
+    .view-toggle { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: #f2f3f5; }
+    .view-btn { min-height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: #646a73; cursor: pointer; font-size: 12px; }
+    .view-btn:hover { color: #245bdb; }
+    .view-btn:focus-visible { outline: 2px solid #3370ff; outline-offset: 2px; }
+    .view-btn.active { background: #fff; color: #245bdb; box-shadow: 0 1px 4px rgba(31,35,41,.12); font-weight: 600; }
+    .legend-mini { color: var(--muted); font-size: 12px; text-align: right; white-space: nowrap; }
+    .chart-scroll { width: 100%; overflow-x: auto; padding: 0 10px 10px; }
+    #chart { width: 100%; min-width: 760px; height: 610px; display: block; }
+    .axis-label { fill: #50555c; font-size: 12px; }
+    .tick-label { fill: #7b8088; font-size: 11px; }
+    .grid-line { stroke: #edf0f4; stroke-width: 1; }
+    .divider { stroke: #9aa5b5; stroke-width: 1.2; stroke-dasharray: 5 5; }
+    .quadrant-label { fill: #5f6670; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+    .bubble { cursor: pointer; transition: opacity .15s; outline: none; }
+    .bubble .outer { fill-opacity: .16; stroke-width: 1.7; }
+    .bubble .inner { fill-opacity: .82; pointer-events: none; }
+    .bubble.watch .outer { fill: white !important; stroke-dasharray: 4 3; stroke-width: 2; }
+    .bubble.watch .inner { fill-opacity: .42; }
+    .bubble.dim { opacity: .08; pointer-events: none; }
+    .bubble.match { opacity: 1; }
+    .bubble:hover .outer, .bubble.selected .outer, .bubble:focus-visible .outer { stroke-width: 3.4; }
+    .bubble:focus-visible .focus-ring { opacity: 1; }
+    .bubble-label { font-size: 11px; font-weight: 650; fill: #20242a; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+    .tooltip {
+      position: fixed; z-index: 20; pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s;
+      background: #1f2329; color: white; border-radius: 9px; padding: 9px 11px; box-shadow: 0 8px 24px rgba(0,0,0,.18); max-width: 260px;
+      font-size: 12px;
+    }
+    .tooltip.show { opacity: 1; transform: translateY(0); }
+    .tooltip strong { display: block; margin-bottom: 3px; font-size: 13px; }
+    .tooltip .tt-muted { color: #c4c7cc; }
+    .detail { padding: 18px; display: flex; flex-direction: column; min-height: 610px; }
+    .detail-kicker { color: var(--muted); font-size: 12px; }
+    .detail h2 { font-size: 21px; line-height: 1.25; margin: 6px 0 10px; word-break: break-word; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+    .tag { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 600; }
+    .tag.soft { background: #f2f3f5; color: #4e5969; }
+    .tag.motive { color: white; }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .metric { border: 1px solid var(--line); border-radius: 9px; padding: 10px; }
+    .metric span { display: block; color: var(--muted); font-size: 11px; }
+    .metric strong { display: block; margin-top: 2px; font-size: 17px; font-variant-numeric: tabular-nums; }
+    .decision { margin-top: 14px; padding: 12px; border-radius: 10px; background: #f7f8fa; }
+    .decision-title { font-weight: 700; margin-bottom: 4px; }
+    .decision p { margin: 0; color: var(--muted); font-size: 12px; }
+    .basis { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .basis div + div { margin-top: 5px; }
+    .table-panel { margin-top: 14px; overflow: hidden; box-shadow: none; }
+    .table-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .table-count { color: var(--muted); font-size: 12px; }
+    .table-wrap { overflow: auto; max-height: 570px; }
+    table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+    thead { position: sticky; top: 0; z-index: 2; background: #f7f8fa; }
+    th { text-align: left; color: #646a73; font-size: 12px; font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    td { padding: 11px 12px; border-bottom: 1px solid #eff1f4; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    tbody tr { cursor: pointer; transition: background .12s; }
+    tbody tr:hover, tbody tr.selected { background: #f1f5ff; }
+    .name-cell { font-weight: 600; color: #2b2f36; }
+    .motive-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; color: white; font-size: 12px; }
+    .status-pill { padding: 3px 7px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+    .status-pill.watch { background: #f2f3f5; color: #646a73; }
+    .status-pill.star { background: #e8f7ee; color: #237b4b; }
+    .status-pill.finish { background: #fff3e5; color: #ad6800; }
+    .status-pill.entry { background: #e8f3ff; color: #245bdb; }
+    .status-pill.manage { background: #feeceb; color: #c02b2b; }
+    details { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+    summary { cursor: pointer; padding: 15px 18px; font-weight: 700; }
+    .method { padding: 0 18px 18px; color: #50555c; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .method-card { background: #f7f8fa; padding: 12px; border-radius: 9px; }
+    .method-card strong { display: block; color: #252930; margin-bottom: 4px; }
+    .method-card code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    .empty { padding: 34px; color: var(--muted); text-align: center; }
+    @media (max-width: 1120px) {
+      .workspace { grid-template-columns: 1fr; }
+      .detail { min-height: 0; }
+      .basis { margin-top: 16px; }
+    }
+    @media (max-width: 720px) {
+      .page { padding: 14px; }
+      .topbar { display: block; }
+      .source-pill { margin-top: 12px; display: inline-block; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .controls { align-items: stretch; }
+      .search-wrap { flex-basis: 100%; }
+      .method { grid-template-columns: 1fr; }
+      .panel-head { display: block; }
+      .chart-actions { margin-top: 12px; justify-content: space-between; }
+      h1 { font-size: 24px; }
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <p class="tag">Public portfolio sample · 01</p>
-    <h1>模板策略<br>方法样例</h1>
-    <p class="lead">展示从用户动机、内容形式到体验链路的产品分析方法，不呈现真实模板、业务数据或上线表现。</p>
-    <aside class="notice">公开作品集版本：分类、案例与描述均为抽象化示例，不对应任何真实业务、用户或内部决策。</aside>
-    <section class="grid" aria-label="方法框架">
-      <article class="card"><span class="num">01 / CONTEXT</span><h2>识别创作场景</h2><p>从使用者目标、表达成本和触发时机梳理问题空间。</p></article>
-      <article class="card"><span class="num">02 / CONCEPT</span><h2>构建内容方向</h2><p>将洞察转化为可验证的主题、结构与互动假设。</p></article>
-      <article class="card"><span class="num">03 / REVIEW</span><h2>形成迭代闭环</h2><p>以体验反馈与质量观察为依据，持续校准产品判断。</p></article>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LOOPIT · TEMPLATE MAP</div>
+        <h1>模板动机策略样例</h1>
+        <div class="subtitle">颜色表示用户为什么愿意创作；位置基于示例模板的模拟表现。主分类来自选题库“动机”字段，四象限仅作为表现判断。</div>
+      </div>
+      <div class="source-pill">公开示例数据 · 2026-08</div>
+    </header>
+
+    <section class="kpis">
+      <div class="kpi"><div class="kpi-label">示例模板</div><div class="kpi-value">12</div></div>
+      <div class="kpi"><div class="kpi-label">创作动机</div><div class="kpi-value">6 类</div></div>
+      <div class="kpi"><div class="kpi-label">可观察样例</div><div class="kpi-value">10</div></div>
+      <div class="kpi"><div class="kpi-label">探索样例</div><div class="kpi-value">2</div></div>
     </section>
-    <footer>公开版不含原始数据、项目编号、内部名称、素材或协作记录。</footer>
-  </main>
-</body>
+
+    <section class="controls" aria-label="筛选模板">
+      <label class="search-wrap">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search" class="search" placeholder="搜索模板名、玩法或动机" autocomplete="off" />
+      </label>
+      <div id="motiveFilters" class="filter-group"></div>
+      <div class="filter-group" aria-label="样本状态">
+        <button class="chip sample-chip active" data-sample="all">全部样本</button>
+        <button class="chip sample-chip" data-sample="eligible">可判断</button>
+        <button class="chip sample-chip" data-sample="watch">待观察</button>
+      </div>
+      <button id="reset" class="reset">重置</button>
+    </section>
+
+    <main class="workspace">
+      <section class="panel chart-panel">
+        <div class="panel-head">
+          <div>
+            <div id="chartTitle" class="panel-title">创作意愿 × 消费价值</div>
+            <div id="chartNote" class="panel-note">各模板上线日至今累计 · 横轴 Use 率 · 纵轴原始条均 VV（对数坐标）</div>
+          </div>
+          <div class="chart-actions">
+            <div class="view-toggle" role="group" aria-label="切换象限纵轴">
+              <button class="view-btn active" data-mode="vv" aria-pressed="true">条均 VV</button>
+              <button class="view-btn" data-mode="rate10" aria-pressed="false">10 秒率</button>
+            </div>
+            <div class="legend-mini">外圈面积＝创建量<br>内圈/外圈面积＝发布率</div>
+          </div>
+        </div>
+        <div class="chart-scroll"><svg id="chart" role="img" aria-label="模板 Use 率与条均 VV 气泡图"></svg></div>
+      </section>
+
+      <aside class="panel detail" id="detail"></aside>
+    </main>
+
+    <section class="panel table-panel">
+      <div class="table-head">
+        <div><div class="panel-title">每个模板的动机分类</div><div class="panel-note">点击任意一行可在图中定位</div></div>
+        <div id="tableCount" class="table-count"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>模板</th><th>动机分类</th><th>内容类型</th><th>玩法</th><th>累计起点</th><th>表现判断</th>
+            <th>Use 率</th><th>条均 VV</th><th>示例发布量</th><th>发布率</th><th>10 秒率</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <details>
+      <summary>数据来源与计算口径</summary>
+      <div class="method">
+        <div class="method-card"><strong>动机分类从哪里来</strong>动机来自公开版使用模拟样例数据，仅用于展示分析方法与交互形式。</div>
+        <div class="method-card"><strong>创作端与消费端</strong><code>Use率 = Σ匹配使用点击用户数 ÷ Σ详情曝光用户数</code><br><code>条均VV = Σ模板VV ÷ Σ公开发布PID</code><br><code>10秒率 = Σ播放超过10秒VV ÷ ΣVV</code>。条均 VV 使用原始值，不做平滑。</div>
+        <div class="method-card"><strong>为什么这样判断</strong>VV 用对数坐标避免极高值挤压其他模板。示例发布量 ≥ 100 才进入象限判断；不足 100 仍展示真实位置，但标记“样本不足／待观察”。Use、条均 VV 与 10 秒率分界线都取样本充足模板的中位数；10 秒率仅用于留存诊断，不替代条均 VV 的表现分类。</div>
+      </div>
+    </details>
+  </div>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    const templates = [
+      {"name":"光影拼图","useRate":74.2,"vv":28640,"avgVv":41.8,"created":962,"published":514,"detail":1480,"rate10s":53.6,"start":20260801,"motivation":"好奇探索","contentType":"图片互动","play":"拼图","effect":"视觉反馈"},
+      {"name":"节奏涂鸦","useRate":71.8,"vv":19420,"avgVv":33.7,"created":740,"published":432,"detail":1170,"rate10s":49.4,"start":20260802,"motivation":"挑战证明","contentType":"音乐互动","play":"节奏点击","effect":"节奏反馈"},
+      {"name":"色彩实验室","useRate":69.4,"vv":10580,"avgVv":22.6,"created":588,"published":327,"detail":930,"rate10s":47.8,"start":20260803,"motivation":"自我展示","contentType":"图片互动","play":"填色","effect":"图片呈现"},
+      {"name":"轻松消除","useRate":67.1,"vv":8420,"avgVv":18.1,"created":536,"published":286,"detail":860,"rate10s":52.3,"start":20260804,"motivation":"放松解压","contentType":"休闲互动","play":"消除","effect":"互动反馈"},
+      {"name":"选择挑战","useRate":63.5,"vv":16260,"avgVv":28.4,"created":682,"published":384,"detail":1090,"rate10s":45.7,"start":20260805,"motivation":"选择表达","contentType":"问答互动","play":"选择题","effect":""},
+      {"name":"趣味反应","useRate":61.3,"vv":7410,"avgVv":16.5,"created":448,"published":231,"detail":730,"rate10s":39.6,"start":20260806,"motivation":"恶搞整活","contentType":"轻互动","play":"时机点击","effect":""},
+      {"name":"像素花园","useRate":70.4,"vv":12780,"avgVv":25.3,"created":622,"published":348,"detail":970,"rate10s":50.1,"start":20260807,"motivation":"放松解压","contentType":"图片互动","play":"拼豆","effect":"图片呈现"},
+      {"name":"寻迹冒险","useRate":75.6,"vv":31840,"avgVv":57.9,"created":804,"published":550,"detail":1390,"rate10s":58.7,"start":20260808,"motivation":"挑战证明","contentType":"图片互动","play":"找不同","effect":""},
+      {"name":"表情工坊","useRate":66.2,"vv":9680,"avgVv":20.7,"created":510,"published":248,"detail":815,"rate10s":43.2,"start":20260809,"motivation":"自我展示","contentType":"创作互动","play":"自定义","effect":""},
+      {"name":"收藏拼图","useRate":58.9,"vv":11240,"avgVv":24.8,"created":453,"published":206,"detail":740,"rate10s":46.4,"start":20260810,"motivation":"好奇探索","contentType":"图片互动","play":"拼图","effect":""},
+      {"name":"指尖闯关","useRate":64.8,"vv":22390,"avgVv":39.2,"created":706,"published":408,"detail":1125,"rate10s":55.2,"start":20260811,"motivation":"挑战证明","contentType":"休闲互动","play":"关卡","effect":"互动反馈"},
+      {"name":"故事卡片","useRate":60.1,"vv":8160,"avgVv":17.4,"created":424,"published":196,"detail":684,"rate10s":41.8,"start":20260812,"motivation":"选择表达","contentType":"文字互动","play":"卡片选择","effect":""}
+    ];
+
+    const motives = ["恶搞整活","放松解压","好奇探索","挑战证明","选择表达","自我展示"];
+    const colors = {"恶搞整活":"#f54a45","放松解压":"#14b8a6","好奇探索":"#7c5ce7","挑战证明":"#3370ff","选择表达":"#f59e0b","自我展示":"#e85aad"};
+    const median = values => {
+      const sorted = [...values].sort((a,b)=>a-b), middle = Math.floor(sorted.length/2);
+      return sorted.length % 2 ? sorted[middle] : (sorted[middle-1] + sorted[middle]) / 2;
+    };
+    const eligibleTemplates = templates.filter(d=>d.published>=100);
+    const USE_LINE = 66.4, VV_LINE = 23.1;
+    const RATE10_LINE = median(eligibleTemplates.map(d=>d.rate10s));
+    let activeMotives = new Set(motives);
+    let sampleFilter = "all";
+    let searchText = "";
+    let chartMode = "vv";
+    let selected = templates.find(d => d.name === "节奏涂鸦");
+
+    const fmt = n => n.toLocaleString("zh-CN");
+    const fmtDate = n => `${String(n).slice(0,4)}-${String(n).slice(4,6)}-${String(n).slice(6,8)}`;
+    const publishRate = d => d.created ? d.published / d.created * 100 : 0;
+    function performance(d) {
+      if (d.published < 100) return {label:"样本不足／待观察", key:"watch", copy:"示例发布量 少于 100，保留真实位置，但不直接下明星或治理结论。"};
+      if (d.useRate >= USE_LINE && d.avgVv >= VV_LINE) return {label:"明星模板", key:"star", copy:"创作端与消费端均高于分界线，可优先放大供给并验证可复制性。"};
+      if (d.useRate >= USE_LINE) return {label:"高使用低消费／优化成片", key:"finish", copy:"用户愿意创作，但发布后的消费表现偏弱，优先优化成片质量与内容承接。"};
+      if (d.avgVv >= VV_LINE) return {label:"低使用高消费／优化入口", key:"entry", copy:"成片具备消费价值，但创作采用不足，优先降低入口、理解与操作门槛。"};
+      return {label:"双低／治理改版", key:"manage", copy:"创作采用与消费表现均偏弱，建议治理、重做或重新验证动机。"};
+    }
+    function retentionDiagnostic(d) {
+      if (d.published < 100) return {label:"样本不足／待观察", key:"watch", copy:"示例发布量 少于 100，仅展示真实位置，暂不下留存诊断结论。"};
+      if (d.useRate >= USE_LINE && d.rate10s >= RATE10_LINE) return {label:"高使用 · 高留存", key:"star", copy:"创作采用与 10 秒留存均高于中位数，说明入口吸引力和前段消费承接同时较好。"};
+      if (d.useRate >= USE_LINE) return {label:"高使用 · 优化留存", key:"finish", copy:"用户愿意开始创作，但成片的前 10 秒留存偏弱，优先检查开场信息密度与首屏效果。"};
+      if (d.rate10s >= RATE10_LINE) return {label:"高留存 · 优化入口", key:"entry", copy:"已发布内容的 10 秒留存较好，但创作采用不足，优先降低理解与操作门槛。"};
+      return {label:"双低 · 待优化", key:"manage", copy:"创作采用与 10 秒留存均低于中位数，建议同时复盘动机、入口与成片前段。"};
+    }
+    function isVisible(d) {
+      const haystack = `${d.name} ${d.motivation} ${d.contentType} ${d.play} ${d.effect}`.toLowerCase();
+      const sampleOk = sampleFilter === "all" || (sampleFilter === "eligible" ? d.published >= 100 : d.published < 100);
+      return activeMotives.has(d.motivation) && sampleOk && haystack.includes(searchText);
+    }
+
+    function buildFilters() {
+      const host = document.getElementById("motiveFilters");
+      host.innerHTML = motives.map(m => `<button class="chip motive-chip active" data-motive="${m}" style="--dot:${colors[m]}"><span class="dot"></span>${m}<span class="chip-count">${templates.filter(d=>d.motivation===m).length}</span></button>`).join("");
+      host.addEventListener("click", e => {
+        const btn = e.target.closest(".motive-chip"); if (!btn) return;
+        const m = btn.dataset.motive;
+        if (activeMotives.has(m) && activeMotives.size > 1) activeMotives.delete(m); else activeMotives.add(m);
+        btn.classList.toggle("active", activeMotives.has(m));
+        refresh();
+      });
+    }
+
+    function renderChart() {
+      const svg = document.getElementById("chart");
+      const W = Math.max(760, svg.clientWidth || 900), H = 610;
+      const M = {top:38,right:35,bottom:58,left:70}, iw=W-M.left-M.right, ih=H-M.top-M.bottom;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      const isVv = chartMode === "vv";
+      const xMin=40, xMax=86, yMin=isVv?3.5:15, yMax=isVv?260:65;
+      const yLine=isVv?VV_LINE:RATE10_LINE;
+      const x = v => M.left + (v-xMin)/(xMax-xMin)*iw;
+      const y = v => isVv
+        ? M.top + (Math.log(yMax)-Math.log(v))/(Math.log(yMax)-Math.log(yMin))*ih
+        : M.top + (yMax-v)/(yMax-yMin)*ih;
+      const yValue = d => isVv ? d.avgVv : d.rate10s;
+      const r = v => 6 + Math.sqrt(v/Math.max(...templates.map(d=>d.created)))*24;
+      const yTicks=isVv?[4,6,10,20,50,100,200]:[20,30,40,50,60], xTicks=[40,45,50,55,60,65,70,75,80,85];
+      const labels=isVv
+        ? {tl:"优化入口",tr:"明星模板",bl:"治理改版",br:"优化成片"}
+        : {tl:"高留存 · 优化入口",tr:"高使用 · 高留存",bl:"双低 · 待优化",br:"高使用 · 优化留存"};
+      document.getElementById("chartTitle").textContent=isVv?"创作意愿 × 消费价值":"创作意愿 × 10 秒留存诊断";
+      document.getElementById("chartNote").textContent=isVv
+        ? "各模板上线日至今累计 · 横轴 Use 率 · 纵轴原始条均 VV（对数坐标）"
+        : "诊断视图 · 横轴 Use 率 · 纵轴 10 秒率（线性坐标）· 不替代条均 VV 表现分类";
+      svg.setAttribute("aria-label", isVv?"模板 Use 率与条均 VV 气泡图":"模板 Use 率与 10 秒率气泡图");
+      document.querySelectorAll(".view-btn").forEach(btn=>{
+        const active=btn.dataset.mode===chartMode;
+        btn.classList.toggle("active",active);
+        btn.setAttribute("aria-pressed",String(active));
+      });
+      let html = `
+        <defs><clipPath id="plot"><rect x="${M.left}" y="${M.top}" width="${iw}" height="${ih}" rx="8"/></clipPath></defs>
+        <rect x="${M.left}" y="${M.top}" width="${x(USE_LINE)-M.left}" height="${y(yLine)-M.top}" fill="#fff7f7"/>
+        <rect x="${x(USE_LINE)}" y="${M.top}" width="${M.left+iw-x(USE_LINE)}" height="${y(yLine)-M.top}" fill="#f2fbf6"/>
+        <rect x="${M.left}" y="${y(yLine)}" width="${x(USE_LINE)-M.left}" height="${M.top+ih-y(yLine)}" fill="#f7f9fc"/>
+        <rect x="${x(USE_LINE)}" y="${y(yLine)}" width="${M.left+iw-x(USE_LINE)}" height="${M.top+ih-y(yLine)}" fill="#fffaf1"/>`;
+      yTicks.forEach(t => html += `<line class="grid-line" x1="${M.left}" x2="${M.left+iw}" y1="${y(t)}" y2="${y(t)}"/><text class="tick-label" x="${M.left-10}" y="${y(t)+4}" text-anchor="end">${t}${isVv?'':'%'}</text>`);
+      xTicks.forEach(t => html += `<line class="grid-line" x1="${x(t)}" x2="${x(t)}" y1="${M.top}" y2="${M.top+ih}"/><text class="tick-label" x="${x(t)}" y="${M.top+ih+22}" text-anchor="middle">${t}%</text>`);
+      html += `<line class="divider" x1="${x(USE_LINE)}" x2="${x(USE_LINE)}" y1="${M.top}" y2="${M.top+ih}"/><line class="divider" x1="${M.left}" x2="${M.left+iw}" y1="${y(yLine)}" y2="${y(yLine)}"/>
+        <text class="tick-label" x="${x(USE_LINE)+5}" y="${M.top+ih-8}">Use 中位数 ${USE_LINE.toFixed(2)}%</text><text class="tick-label" x="${M.left+6}" y="${y(yLine)-7}">${isVv?'条均 VV':'10 秒率'}中位数 ${yLine.toFixed(2)}${isVv?'':'%'}</text>
+        <text class="quadrant-label" x="${M.left+12}" y="${M.top+18}">${labels.tl}</text><text class="quadrant-label" x="${M.left+iw-12}" y="${M.top+18}" text-anchor="end">${labels.tr}</text>
+        <text class="quadrant-label" x="${M.left+12}" y="${M.top+ih-12}">${labels.bl}</text><text class="quadrant-label" x="${M.left+iw-12}" y="${M.top+ih-12}" text-anchor="end">${labels.br}</text>
+        <text class="axis-label" x="${M.left+iw/2}" y="${H-12}" text-anchor="middle">创作端：Use 率 →</text><text class="axis-label" transform="translate(17 ${M.top+ih/2}) rotate(-90)" text-anchor="middle">${isVv?'消费端：原始条均 VV（log）→':'诊断端：10 秒率 →'}</text>
+        <g clip-path="url(#plot)">`;
+      templates.forEach((d,i) => {
+        const visible=isVisible(d), rr=r(d.created), inner=rr*Math.sqrt(d.published/d.created), c=colors[d.motivation], watch=d.published<100, isSel=selected&&selected.name===d.name;
+        const decision=isVv?performance(d):retentionDiagnostic(d);
+        html += `<g class="bubble ${watch?'watch':''} ${visible?'match':'dim'} ${isSel?'selected':''}" data-index="${i}" tabindex="${visible?0:-1}" transform="translate(${x(d.useRate)} ${y(yValue(d))})" aria-label="${d.name}，动机${d.motivation}，${decision.label}">
+          <circle class="focus-ring" r="${rr+5}" fill="none" stroke="#1f2329" stroke-width="2" opacity="0"/>
+          <circle class="outer" r="${rr}" fill="${c}" stroke="${c}"/><circle class="inner" r="${inner}" fill="${c}"/>
+        </g>`;
+      });
+      if (selected && isVisible(selected)) html += `<text class="bubble-label" x="${x(selected.useRate)+r(selected.created)+7}" y="${y(yValue(selected))+4}">${selected.name}</text>`;
+      html += `</g>`;
+      svg.innerHTML = html;
+      svg.querySelectorAll(".bubble.match").forEach(el => {
+        const d=templates[+el.dataset.index];
+        el.addEventListener("click",()=>selectTemplate(d));
+        el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectTemplate(d)}});
+        el.addEventListener("mouseenter",e=>showTooltip(e,d));
+        el.addEventListener("mousemove",e=>moveTooltip(e));
+        el.addEventListener("mouseleave",hideTooltip);
+        el.addEventListener("focus",e=>showTooltip(e,d,true));
+        el.addEventListener("blur",hideTooltip);
+      });
+    }
+
+    function renderDetail() {
+      const d = selected || templates.find(isVisible) || templates[0];
+      if (!d) return;
+      const p=performance(d), q=retentionDiagnostic(d), color=colors[d.motivation];
+      const decision = chartMode === "vv"
+        ? `<div class="decision"><div class="decision-title">表现判断：${p.label}</div><p>${p.copy}</p></div>`
+        : `<div class="decision"><div class="decision-title">10 秒诊断：${q.label}</div><p>${q.copy}<br>这是留存诊断视图，不替代原表现判断“${p.label}”。</p></div>`;
+      document.getElementById("detail").innerHTML = `
+        <div class="detail-kicker">当前模板</div><h2>${d.name}</h2>
+        <div class="tag-row"><span class="tag motive" style="background:${color}"><span class="dot" style="background:white"></span>${d.motivation}</span><span class="tag soft">${d.contentType}</span><span class="tag soft">${d.play}</span></div>
+        <div class="metric-grid">
+          <div class="metric"><span>Use 率</span><strong>${d.useRate.toFixed(2)}%</strong></div>
+          <div class="metric"><span>原始条均 VV</span><strong>${d.avgVv.toFixed(2)}</strong></div>
+          <div class="metric"><span>创建 PID</span><strong>${fmt(d.created)}</strong></div>
+          <div class="metric"><span>示例发布量</span><strong>${fmt(d.published)}</strong></div>
+          <div class="metric"><span>发布率</span><strong>${publishRate(d).toFixed(1)}%</strong></div>
+          <div class="metric"><span>10 秒率 · 诊断</span><strong>${d.rate10s.toFixed(2)}%</strong></div>
+        </div>
+        ${decision}
+        <div class="basis"><div><strong>动机依据：</strong>选题库“动机”字段＝${d.motivation}</div><div><strong>玩法标签：</strong>${d.play}${d.effect?` · ${d.effect}`:""}</div><div><strong>累计区间：</strong>${fmtDate(d.start)} 至 2026-08-18</div><div><strong>样本规则：</strong>${d.published>=100?"示例发布量 ≥ 100，可参与四象限判断":"示例发布量 < 100，仅观察真实位置"}</div></div>`;
+    }
+
+    function renderTable() {
+      const rows=templates.filter(isVisible).sort((a,b)=>motives.indexOf(a.motivation)-motives.indexOf(b.motivation)||b.avgVv-a.avgVv);
+      document.getElementById("tableCount").textContent=`当前显示 ${rows.length} / ${templates.length}`;
+      document.getElementById("tableBody").innerHTML = rows.length ? rows.map(d=>{const p=performance(d);return `<tr data-name="${d.name}" class="${selected&&selected.name===d.name?'selected':''}">
+        <td class="name-cell">${d.name}</td><td><span class="motive-pill" style="background:${colors[d.motivation]}"><span class="dot" style="background:white"></span>${d.motivation}</span></td><td>${d.contentType}</td><td>${d.play}</td><td>${fmtDate(d.start)}</td><td><span class="status-pill ${p.key}">${p.label}</span></td>
+        <td>${d.useRate.toFixed(2)}%</td><td>${d.avgVv.toFixed(2)}</td><td>${fmt(d.published)}</td><td>${publishRate(d).toFixed(1)}%</td><td>${d.rate10s.toFixed(2)}%</td></tr>`}).join("") : `<tr><td colspan="11" class="empty">没有符合当前筛选条件的模板</td></tr>`;
+      document.querySelectorAll("tbody tr[data-name]").forEach(tr=>tr.addEventListener("click",()=>{const d=templates.find(x=>x.name===tr.dataset.name);selectTemplate(d,true)}));
+    }
+
+    function selectTemplate(d, scroll=false) { selected=d; renderChart(); renderDetail(); renderTable(); if(scroll){const panel=document.querySelector(".chart-panel");window.scrollTo({top:panel.getBoundingClientRect().top+window.scrollY-12,behavior:"smooth"});} }
+    function showTooltip(e,d,keyboard=false) { const p=chartMode==="vv"?performance(d):retentionDiagnostic(d), tt=document.getElementById("tooltip"); const metric=chartMode==="vv"?`条均 VV ${d.avgVv.toFixed(2)}`:`10 秒率 ${d.rate10s.toFixed(2)}%`; tt.innerHTML=`<strong>${d.name}</strong><div>${d.motivation} · ${p.label}</div><div class="tt-muted">Use ${d.useRate.toFixed(2)}% · ${metric} · 发布 ${d.published}</div>`; tt.classList.add("show"); if(keyboard){const r=e.currentTarget.getBoundingClientRect();moveTooltip({clientX:r.left+r.width/2,clientY:r.top})}else moveTooltip(e); }
+    function moveTooltip(e) { const tt=document.getElementById("tooltip"); const pad=12; let left=e.clientX+14, top=e.clientY+14; const r=tt.getBoundingClientRect(); if(left+r.width>innerWidth-pad) left=e.clientX-r.width-14; if(top+r.height>innerHeight-pad) top=e.clientY-r.height-14; tt.style.left=`${Math.max(pad,left)}px`;tt.style.top=`${Math.max(pad,top)}px`; }
+    function hideTooltip(){document.getElementById("tooltip").classList.remove("show")}
+    function refresh(){ if(selected&&!isVisible(selected)) selected=templates.find(isVisible)||null; renderChart();renderDetail();renderTable(); }
+
+    document.getElementById("search").addEventListener("input",e=>{searchText=e.target.value.trim().toLowerCase();refresh()});
+    document.querySelectorAll(".view-btn").forEach(btn=>btn.addEventListener("click",()=>{chartMode=btn.dataset.mode;renderChart();renderDetail()}));
+    document.querySelectorAll(".sample-chip").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".sample-chip").forEach(b=>b.classList.remove("active"));btn.classList.add("active");sampleFilter=btn.dataset.sample;refresh()}));
+    document.getElementById("reset").addEventListener("click",()=>{activeMotives=new Set(motives);sampleFilter="all";searchText="";document.getElementById("search").value="";document.querySelectorAll(".motive-chip,.sample-chip").forEach(b=>b.classList.add("active"));document.querySelectorAll(".sample-chip").forEach(b=>b.classList.toggle("active",b.dataset.sample==="all"));selected=templates.find(d=>d.name==="节奏涂鸦");refresh()});
+    window.addEventListener("resize",()=>renderChart());
+    buildFilters(); refresh();
+  </script>
+<div id="public-note" style="max-width:1280px;margin:0 auto 28px;padding:0 18px;color:#687078;font-size:12px">公开作品集版：名称、指标、日期与案例均为模拟数据，不对应真实业务。</div></body>
 </html>
