@@ -175,10 +175,10 @@
     </header>
 
     <section class="kpis">
-      <div class="kpi"><div class="kpi-label">示例模板</div><div class="kpi-value">12</div></div>
+      <div class="kpi"><div class="kpi-label">示例模板</div><div class="kpi-value">33</div></div>
       <div class="kpi"><div class="kpi-label">创作动机</div><div class="kpi-value">6 类</div></div>
-      <div class="kpi"><div class="kpi-label">可观察样例</div><div class="kpi-value">10</div></div>
-      <div class="kpi"><div class="kpi-label">探索样例</div><div class="kpi-value">2</div></div>
+      <div class="kpi"><div class="kpi-label">可观察样例</div><div class="kpi-value">29</div></div>
+      <div class="kpi"><div class="kpi-label">探索样例</div><div class="kpi-value">4</div></div>
     </section>
 
     <section class="controls" aria-label="筛选模板">
@@ -258,6 +258,49 @@
       {"name":"指尖闯关","useRate":64.8,"vv":22390,"avgVv":39.2,"created":706,"published":408,"detail":1125,"rate10s":55.2,"start":20260811,"motivation":"挑战证明","contentType":"休闲互动","play":"关卡","effect":"互动反馈"},
       {"name":"故事卡片","useRate":60.1,"vv":8160,"avgVv":17.4,"created":424,"published":196,"detail":684,"rate10s":41.8,"start":20260812,"motivation":"选择表达","contentType":"文字互动","play":"卡片选择","effect":""}
     ];
+    const extendedSampleBlueprints = [
+      ["微光剧场","好奇探索","图片互动","镜头切换","动态呈现"],
+      ["城市拼贴","自我展示","创作互动","自由组合","图片呈现"],
+      ["反应训练","挑战证明","休闲互动","限时点击","互动反馈"],
+      ["治愈花房","放松解压","图片互动","布置收集","视觉反馈"],
+      ["趣味投票","选择表达","问答互动","二选一",""],
+      ["表情接力","恶搞整活","轻互动","连续点击",""],
+      ["星球配色","放松解压","图片互动","填色","图片呈现"],
+      ["侦探卡组","挑战证明","卡牌互动","线索选择","互动反馈"],
+      ["灵感拼盘","好奇探索","创作互动","拖拽组合",""],
+      ["手速挑战","挑战证明","休闲互动","节奏点击","节奏反馈"],
+      ["今日形象","自我展示","图片互动","造型搭配","图片呈现"],
+      ["故事分支","选择表达","文字互动","剧情选择",""],
+      ["泡泡合成","放松解压","休闲互动","合成闯关","互动反馈"],
+      ["奇妙镜像","好奇探索","图片互动","一键生成","视觉反馈"],
+      ["荒诞问答","恶搞整活","问答互动","随机回答",""],
+      ["线索迷宫","挑战证明","图片互动","路径探索",""],
+      ["色彩快闪","自我展示","创作互动","快速填色","图片呈现"],
+      ["像素实验","放松解压","图片互动","拼豆","图片呈现"],
+      ["轻量连线","挑战证明","休闲互动","连线消除","互动反馈"],
+      ["灵感标签","选择表达","文字互动","标签选择",""],
+      ["趣味按钮","恶搞整活","轻互动","单击反馈",""]
+    ];
+    extendedSampleBlueprints.forEach((seed, index) => {
+      const watch = index >= 17;
+      const created = watch ? 84 + index * 3 : 278 + index * 31;
+      const published = watch ? 45 + (index - 17) * 11 : 132 + index * 18;
+      templates.push({
+        name: seed[0],
+        useRate: +(48.6 + ((index * 7.3) % 29.4)).toFixed(2),
+        vv: 4200 + index * 1739,
+        avgVv: +(7.8 + ((index * 4.9) % 56.2)).toFixed(2),
+        created,
+        published,
+        detail: 460 + index * 97,
+        rate10s: +(28.4 + ((index * 5.1) % 34.7)).toFixed(2),
+        start: 20260801 + (index % 18),
+        motivation: seed[1],
+        contentType: seed[2],
+        play: seed[3],
+        effect: seed[4]
+      });
+    });
 
     const motives = ["恶搞整活","放松解压","好奇探索","挑战证明","选择表达","自我展示"];
     const colors = {"恶搞整活":"#f54a45","放松解压":"#14b8a6","好奇探索":"#7c5ce7","挑战证明":"#3370ff","选择表达":"#f59e0b","自我展示":"#e85aad"};
